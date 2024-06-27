@@ -39,7 +39,7 @@ public class Order extends BaseEntity {
         this.registeredDateTime = registeredDateTime;
         this.orderProducts = products.stream()
                 .map(product -> new OrderProduct(this, product))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public static Order create(List<Product> products, LocalDateTime registeredDateTime) {

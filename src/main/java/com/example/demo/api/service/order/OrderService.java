@@ -94,6 +94,6 @@ public class OrderService {
 
         return productNumbers.stream()
                 .map(productMap::get)
-                .collect(Collectors.toList());
+                .toList();
     }
 }
