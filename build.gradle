@@ -1,0 +1,140 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.2.7'
+	id 'io.spring.dependency-management' version '1.1.5'
+	id "org.sonarqube" version "5.0.0.4638"
+	id "jacoco"
+}
+
+sonar {
+	properties {
+		property "sonar.projectName", "demo"
+		property "sonar.projectKey", "demo"
+		property "sonar.language", "java"
+		property "sonar.sourceEncoding", "UTF-8"
+		property "sonar.sources", "src/main"
+		property "sonar.tests", "src/test"
+		property "sonar.java.binaries", "${buildDir}/classes"
+		property "sonar.test.inclusions", "**/*Test.java"
+		property 'sonar.coverage.jacoco.xmlReportPaths', "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+	}
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	// Spring boot
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	// Test
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// Lombok
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	// H2
+	runtimeOnly 'com.h2database:h2'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+	finalizedBy 'jacocoTestReport' // test 태스크가 끝난 후 실행
+}
+
+jacoco {
+	toolVersion = "0.8.11"
+	layout.buildDirectory.dir("reports/jacoco")
+}
+
+jacocoTestReport {
+	dependsOn test // test 종속성 추가
+
+	reports {
+		xml.required = true
+		csv.required = false
+		html.required = false
+	}
+
+	def QDomainList = []
+	for (qPattern in '**/QA'..'**/QZ') { // QClass 대응
+		QDomainList.add(qPattern + '*')
+	}
+
+	afterEvaluate {
+		classDirectories.setFrom(files(classDirectories.files.collect {
+			fileTree(dir: it, exclude: [
+					'**/dto/**',
+					'**/event/**',
+					'**/*InitData*',
+					'**/*Application*',
+					'**/exception/**',
+					'**/service/alarm/**',
+					'**/aop/**',
+					'**/config/**',
+					'**/MemberRole*'
+			] + QDomainList)
+		}))
+	}
+
+	finalizedBy 'jacocoTestCoverageVerification' // jacocoTestReport 태스크가 끝난 후 실행
+}
+
+jacocoTestCoverageVerification {
+	def QDomainList = []
+	for (qPattern in '*.QA'..'*.QZ') { // QClass 대응
+		QDomainList.add(qPattern + '*')
+	}
+
+	violationRules {
+		rule {
+			enabled = true // 규칙 활성화 여부
+			element = 'CLASS' // 커버리지를 체크할 단위 설정
+
+			// 코드 커버리지를 측정할 때 사용되는 지표
+			limit {
+				counter = 'LINE'
+				value = 'COVEREDRATIO'
+				minimum = 0.30
+			}
+
+			limit {
+				counter = 'BRANCH'
+				value = 'COVEREDRATIO'
+				minimum = 0.30
+			}
+
+			excludes = [
+				'**.dto.**',
+				'**.event.**',
+				'**.*InitData*',
+				'**.*Application*',
+				'**.exception.**',
+				'**.service.alarm.**',
+				'**.aop.**',
+				'**.config.**',
+				'**.MemberRole*'
+			] + QDomainList
+		}
+	}
+}
