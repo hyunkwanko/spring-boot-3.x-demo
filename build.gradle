@@ -62,11 +62,13 @@ tasks.named('test') {
 	finalizedBy 'jacocoTestReport' // test 태스크가 끝난 후 실행
 }
 
+// jacoco 정보
 jacoco {
 	toolVersion = "0.8.11"
 	layout.buildDirectory.dir("reports/jacoco")
 }
 
+// jacoco Report 생성
 jacocoTestReport {
 	dependsOn test // test 종속성 추가
 
@@ -100,6 +102,7 @@ jacocoTestReport {
 	finalizedBy 'jacocoTestCoverageVerification' // jacocoTestReport 태스크가 끝난 후 실행
 }
 
+// jacoco Test 유효성 확인
 jacocoTestCoverageVerification {
 	def QDomainList = []
 	for (qPattern in '*.QA'..'*.QZ') { // QClass 대응
