@@ -24,4 +24,4 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build
     - name: Sonarqube Scan
-      run: ./gradlew sonar -Dsonar.host.url= -Dsonar.token=
+      run: ./gradlew sonar -Dsonar.host.url=${{ secrets.SONARQUBE_HOST }} -Dsonar.token=${{ secrets.SONARQUBE_TOKEN }}
