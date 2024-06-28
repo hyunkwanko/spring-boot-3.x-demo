@@ -11,16 +11,17 @@ jobs:
     steps:
     - name: Check out Repository
       uses: actions/checkout@v4
+      with:
+        # Disabling shallow clone is recommended for improving relevancy of reporting
+        fetch-depth: 0
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
-        cache: gradle
-        targets: 'JAVA_HOME'
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew build
     - name: Sonarqube Scan
-      run: ./gradlew sonar -Dsonar.host.url=http://43.203.33.120:9000 -Dsonar.token=sqp_1b5d4ce28b54cfd8bb691484cfd5a785cd005f2f
+      run: ./gradlew sonar -Dsonar.host.url= -Dsonar.token=
